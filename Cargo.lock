@@ -295,7 +295,7 @@ dependencies = [
  "ed25519-dalek",
  "futures-util",
  "http-body-util",
- "jsonschema 0.58.5",
+ "jsonschema 0.58.6",
  "mime",
  "openapi-to-rust",
  "reqwest",
@@ -309,7 +309,7 @@ dependencies = [
 [[package]]
 name = "cloudflare-sts-core"
 version = "0.8.0"
-source = "git+https://github.com/cf-contrib/cloudflare-sts?tag=v0.19.0#54fa785468dcaa20967f2e12aa63e5adb47a117c"
+source = "git+https://github.com/cf-contrib/cloudflare-sts?tag=v0.21.0#772f1ba23667f5f8d3e568756a5015bbe55fdf43"
 dependencies = [
  "base64 0.23.1",
  "serde",
@@ -1142,9 +1142,9 @@ dependencies = [
 
 [[package]]
 name = "jsonschema"
-version = "0.58.5"
+version = "0.58.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea18b8d5e1469b1bdd6b349169305141316a7c26da27f239773b65c830c0f5d6"
+checksum = "f622c574a29fb3034a0a90645afee194dfedc75fc124228801b6e77041075bd1"
 dependencies = [
  "ahash",
  "bytecount",
@@ -1154,12 +1154,12 @@ dependencies = [
  "fraction 0.17.0",
  "getrandom 0.3.4",
  "itoa",
- "jsonschema-regex 0.58.5",
- "jsonschema-value 0.58.5",
+ "jsonschema-regex 0.58.6",
+ "jsonschema-value 0.58.6",
  "num-cmp",
  "num-traits",
  "percent-encoding",
- "referencing 0.58.5",
+ "referencing 0.58.6",
  "regex",
  "serde",
  "serde_json",
@@ -1179,9 +1179,9 @@ dependencies = [
 
 [[package]]
 name = "jsonschema-regex"
-version = "0.58.5"
+version = "0.58.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "854e9e22c420535035e95eed240cbfb4a5f4b7da74d122d63144e0c31926dbfd"
+checksum = "a968fffd387b2ab005bf00c1851f5d26e90df05b6f7ad609ed0d620033cca5e7"
 dependencies = [
  "regex-syntax",
 ]
@@ -1202,9 +1202,9 @@ dependencies = [
 
 [[package]]
 name = "jsonschema-value"
-version = "0.58.5"
+version = "0.58.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e3bfac11ac357ec620880025757d38c67da8fd5b9ef5024d19f0f360002b4ca"
+checksum = "39b7670345e5ce87371339d13705dbb9276b7e3e934bbe1efa2c6734a1f65a96"
 dependencies = [
  "ahash",
  "bytecount",
@@ -1424,9 +1424,9 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
 name = "openapi-to-rust"
-version = "0.20.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc639fc6a3ae9d3b6c9719e0b069904f9c60464f008c93ff7bf4ce699de4b67d"
+checksum = "aed99ca35987c90d047e68fb16312dc6ee24a67080699208588a35f3f1ecfeaf"
 dependencies = [
  "heck",
  "jsonschema 0.49.9",
@@ -1772,9 +1772,9 @@ dependencies = [
 
 [[package]]
 name = "referencing"
-version = "0.58.5"
+version = "0.58.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "590efadb0a669f1712c1e3ab810a55d4c3d20d0127c455f7236dd0710aba0346"
+checksum = "558f3855529c0a7e78a48e409fa653456e55f1b167eab4109c16a255b7727e3f"
 dependencies = [
  "ahash",
  "fluent-uri",
@@ -2104,9 +2104,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.151"
+version = "1.0.154"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14"
+checksum = "e7e9cc8b1b85264074fbcc02a88680c4096b1e47df8f739dceb03bf482f04bd6"
 dependencies = [
  "itoa",
  "memchr",
