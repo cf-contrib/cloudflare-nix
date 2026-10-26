@@ -12,5 +12,8 @@
     "@typespec/openapi": "1.17.0",
     "@typespec/openapi3": "1.17.0",
     "@typespec/versioning": "0.87.0"
+  },
+  "overrides": {
+    "undici": "7.30.1"
   }
 }
