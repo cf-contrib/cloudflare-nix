@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, reopened, labeled, synchronize]
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}-${{ contains(github.event.pull_request.labels.*.name, 'auto-merge') }}
   cancel-in-progress: true
 jobs:
   merge:
