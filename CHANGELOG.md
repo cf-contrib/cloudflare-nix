@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.1](https://github.com/cf-contrib/cloudflare-nix/compare/v0.11.0...v0.11.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* **ci:** keep skipped auto-merge runs from cancelling labeled ones ([5a39d00](https://github.com/cf-contrib/cloudflare-nix/commit/5a39d002229339c81aa33a3b6cef264e9d8007ed))
+* **deps:** bump rustls to 0.23.46 ([89eac75](https://github.com/cf-contrib/cloudflare-nix/commit/89eac75e263d1b86afc92a376e2855045915b1e0))
+* **deps:** override undici to 7.30.1 and bump fast-uri ([aed5914](https://github.com/cf-contrib/cloudflare-nix/commit/aed591409312bfbf3323a7a5a5c90b6827bb374f))
+
 ## [0.11.0](https://github.com/cf-contrib/cloudflare-nix/compare/v0.10.0...v0.11.0) (2026-10-08)
 
 
