@@ -1,2 +1,14 @@
 target
 .wrangler
+
+# env file
+.env
+
+# direnv
+.direnv/
+.env.local
+.envrc.local
+
+# Local nix build result symlinks (point into /nix/store).
+.nix
+.nix-*-link
