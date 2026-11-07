@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/cf-contrib/cloudflare-nix/compare/v0.11.1...v0.11.2) (2026-11-07)
+
+
+### Bug Fixes
+
+* **ci:** merge with the App token so main gets its CI run ([#123](https://github.com/cf-contrib/cloudflare-nix/issues/123)) ([22f3f96](https://github.com/cf-contrib/cloudflare-nix/commit/22f3f962a5b3a11e37ddcffa2d717e8ae000848e))
+
 ## [0.11.1](https://github.com/cf-contrib/cloudflare-nix/compare/v0.11.0...v0.11.1) (2026-10-26)
 
 
