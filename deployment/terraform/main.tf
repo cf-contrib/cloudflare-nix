@@ -1,18 +1,6 @@
 locals {
   custom_domain = !endswith(var.hostname, ".workers.dev")
   url           = "https://${var.hostname}"
-
-  # Upload auth: off unless an issuer is configured. Unset optional fields are
-  # left out rather than sent as null.
-  auth_vars = {
-    CLOUDFLARE_NIX_API_OIDC_PROVIDERS = length(var.oidc_providers) == 0 ? null : jsonencode([
-      for i in var.oidc_providers : merge(
-        { issuer = i.issuer, audience = coalesce(i.audience, local.url), claims = i.claims },
-        i.jwks_uri == null ? {} : { jwks_uri = i.jwks_uri },
-        i.typ == null ? {} : { typ = i.typ },
-      )
-    ])
-  }
 }
 
 # Worker script, reachable on its workers.dev URL or on the custom domain.
@@ -24,7 +12,6 @@ resource "cloudflare_worker" "this" {
     enabled = !local.custom_domain
   }
 
-  # Uploads are logged with the identity they resolved to.
   observability = {
     enabled = true
     logs = {
@@ -72,13 +59,6 @@ resource "cloudflare_worker_version" "this" {
         store_id    = var.signing_key_secret.secret_store_id
         secret_name = var.signing_key_secret.secret_name
       },
-    ],
-    [
-      for name, text in local.auth_vars : {
-        name = name
-        type = "plain_text"
-        text = text
-      } if text != null
     ],
   )
 }

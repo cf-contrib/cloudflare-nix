@@ -1,5 +1,5 @@
 # Plans the module with mocked providers: no credentials or network needed.
-# Covers the bindings for each auth setup, URL modes, the signing key, the
+# Covers the bindings, URL modes, the signing key, the
 # bucket lifecycle and local bundles.
 mock_provider "cloudflare" {}
 mock_provider "github" {}
@@ -46,7 +46,7 @@ run "defaults" {
 
   assert {
     condition     = [for b in cloudflare_worker_version.this.bindings : b.name] == ["CLOUDFLARE_NIX_API_BUCKET"]
-    error_message = "without auth or a signing key, only the bucket should be bound"
+    error_message = "without a signing key, only the bucket should be bound"
   }
 
   assert {
@@ -89,74 +89,6 @@ run "signing_key_from_secrets_store" {
     condition     = length([for b in cloudflare_worker_version.this.bindings : b if b.type == "secret_text"]) == 0
     error_message = "no secret_text binding should be created"
   }
-}
-
-run "oidc_providers" {
-  command = plan
-
-  variables {
-    oidc_providers = [
-      {
-        issuer = "https://token.actions.githubusercontent.com"
-        claims = [{ repository_owner_id = "100000001", ref = "refs/heads/main" }]
-      },
-      {
-        issuer   = "https://example.cloudflareaccess.com"
-        audience = "0123456789abcdef"
-        jwks_uri = "https://example.cloudflareaccess.com/cdn-cgi/access/certs"
-        claims   = [{ email = "uploader@example.com" }]
-      },
-      {
-        issuer = "https://cloudflare-sts-api.example.com"
-        typ    = "at+jwt"
-        claims = [{ profile = "nix-push" }]
-      },
-    ]
-  }
-
-  assert {
-    condition = { for b in cloudflare_worker_version.this.bindings : b.name => jsondecode(b.text) if b.type == "plain_text" } == {
-      CLOUDFLARE_NIX_API_OIDC_PROVIDERS = [
-        {
-          issuer   = "https://token.actions.githubusercontent.com"
-          audience = "https://cloudflare-nix-api.example.workers.dev"
-          claims   = [{ ref = "refs/heads/main", repository_owner_id = "100000001" }]
-        },
-        {
-          issuer   = "https://example.cloudflareaccess.com"
-          audience = "0123456789abcdef"
-          jwks_uri = "https://example.cloudflareaccess.com/cdn-cgi/access/certs"
-          claims   = [{ email = "uploader@example.com" }]
-        },
-        {
-          issuer   = "https://cloudflare-sts-api.example.com"
-          audience = "https://cloudflare-nix-api.example.workers.dev"
-          typ      = "at+jwt"
-          claims   = [{ profile = "nix-push" }]
-        },
-      ]
-    }
-    error_message = "the providers should be bound, the audience defaulting to the cache URL, and an unset jwks_uri or typ left out"
-  }
-}
-
-run "uploads_off_without_providers" {
-  command = plan
-
-  assert {
-    condition     = length([for b in cloudflare_worker_version.this.bindings : b if b.name == "CLOUDFLARE_NIX_API_OIDC_PROVIDERS"]) == 0
-    error_message = "without providers, no auth binding should be created"
-  }
-}
-
-run "issuers_need_claims" {
-  command = plan
-
-  variables {
-    oidc_providers = [{ issuer = "https://issuer.example.com", claims = [] }]
-  }
-
-  expect_failures = [var.oidc_providers]
 }
 
 run "custom_domain" {

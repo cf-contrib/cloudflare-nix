@@ -4,9 +4,9 @@ info:
   license:
     name: MIT
   description: |-
-    A Nix binary cache on Cloudflare Workers and R2. Reads are public. Uploads
-    need an OIDC token from an issuer the Worker trusts, as the password of
-    HTTP Basic credentials.
+    A Nix binary cache on Cloudflare Workers and R2. It has no authentication
+    or authorization: anyone who can reach the Worker can read and upload.
+    Protect it with Cloudflare Access or a gateway of your own.
 
     Errors are JSON, `{ error, message }`. A request that doesn't fit
     this document (a body over the size limit, the wrong content type) is
@@ -33,7 +33,7 @@ paths:
                 type: string
         '500':
           description: |-
-            The auth config, the bindings or the signing key are invalid
+            The bindings or the signing key are invalid
             (`misconfigured`), or a stored object is unreadable (`internal_error`).
             Details go only to the logs.
           content:
@@ -96,7 +96,7 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           description: |-
-            The auth config, the bindings or the signing key are invalid
+            The bindings or the signing key are invalid
             (`misconfigured`), or a stored object is unreadable (`internal_error`).
             Details go only to the logs.
           content:
@@ -121,31 +121,11 @@ paths:
       responses:
         '200':
           description: The NAR was stored.
-        '401':
-          description: |-
-            Missing or invalid credentials: no token, a token from an issuer the
-            Worker doesn't trust, or one for another audience or expired.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: A valid token that no claim set for its issuer allows.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '500':
           description: |-
-            The auth config, the bindings or the signing key are invalid
+            The bindings or the signing key are invalid
             (`misconfigured`), or a stored object is unreadable (`internal_error`).
             Details go only to the logs.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '502':
-          description: The token's issuer, its discovery document or its keys, couldn't be reached.
           content:
             application/json:
               schema:
@@ -159,8 +139,6 @@ paths:
             schema:
               type: string
               format: binary
-      security:
-        - basic: []
   /nix-cache-info:
     get:
       operationId: getNixCacheInfo
@@ -228,7 +206,7 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           description: |-
-            The auth config, the bindings or the signing key are invalid
+            The bindings or the signing key are invalid
             (`misconfigured`), or a stored object is unreadable (`internal_error`).
             Details go only to the logs.
           content:
@@ -260,31 +238,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '401':
-          description: |-
-            Missing or invalid credentials: no token, a token from an issuer the
-            Worker doesn't trust, or one for another audience or expired.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: A valid token that no claim set for its issuer allows.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '500':
           description: |-
-            The auth config, the bindings or the signing key are invalid
+            The bindings or the signing key are invalid
             (`misconfigured`), or a stored object is unreadable (`internal_error`).
             Details go only to the logs.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '502':
-          description: The token's issuer, its discovery document or its keys, couldn't be reached.
           content:
             application/json:
               schema:
@@ -297,8 +255,6 @@ paths:
           text/x-nix-narinfo:
             schema:
               type: string
-      security:
-        - basic: []
 components:
   schemas:
     Error:
@@ -317,16 +273,6 @@ components:
       type: string
       enum:
         - bad_request
-        - unauthorized
-        - forbidden
         - not_found
         - misconfigured
         - internal_error
-        - upstream_error
-  securitySchemes:
-    basic:
-      type: http
-      scheme: Basic
-      description: |-
-        An OIDC token from an issuer the Worker trusts, as the password. The
-        username isn't read.

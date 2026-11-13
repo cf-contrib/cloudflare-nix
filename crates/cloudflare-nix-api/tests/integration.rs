@@ -4,9 +4,7 @@ mod helper;
 
 use cloudflare_nix_sdk::v1::{
     ApiOpError, Error, ErrorCode, GetNarApiError, GetNarInfoApiError, HealthClient,
-    PutNarInfoApiError,
 };
-use serde_json::{Value, json};
 
 const NARINFO: &str = "j5m1qd2dbsmhq0mw13yb8wijnm3pq4z0";
 const NAR: &str = "j5m1qd2dbsmhq0mw13yb8wijnm3pq4z0";
@@ -187,85 +185,6 @@ async fn test_put_rejects_undeclared_content_type() {
     )
     .await;
     assert_eq!(resp.status(), 415);
-}
-
-/// Uploads the fixture narinfo with `authorization`, and returns the
-/// rejection's status and body.
-async fn rejected(authorization: Option<String>) -> (u16, Option<Error>) {
-    let err = helper::client_with(authorization)
-        .put_nar_info(NARINFO, narinfo_fixture(NARINFO))
-        .await
-        .expect_err("the upload should be refused");
-    let body = match err.api().and_then(|api| api.typed.clone()) {
-        Some(PutNarInfoApiError::Status401(body) | PutNarInfoApiError::Status403(body)) => {
-            Some(body)
-        }
-        _ => None,
-    };
-    (status(&err), body)
-}
-
-/// A token from the test issuer with `claim` changed.
-fn token_with(claim: &str, value: Value) -> Option<String> {
-    let mut claims = helper::claims();
-    claims[claim] = value;
-    Some(helper::basic("oidc", &helper::token(&claims)))
-}
-
-#[tokio::test]
-async fn test_put_rejects_bad_credentials() {
-    let _uploads = helper::UPLOADS.lock().await;
-    for authorization in [
-        None,
-        Some("Bearer abc".to_string()),
-        Some(helper::basic("oidc", "not-a-jwt")),
-    ] {
-        let (status, body) = rejected(authorization.clone()).await;
-        assert_eq!(status, 401, "{authorization:?}");
-        assert_eq!(body.map(|body| body.error), Some(ErrorCode::Unauthorized));
-    }
-}
-
-#[tokio::test]
-async fn test_put_says_why_a_token_is_refused() {
-    let _uploads = helper::UPLOADS.lock().await;
-    let now = helper::claims()["iat"].as_u64().unwrap();
-    for (claim, value, expected) in [
-        (
-            "iss",
-            json!("https://other.example.com"),
-            "no provider is for issuer https://other.example.com".to_string(),
-        ),
-        (
-            "aud",
-            json!("https://wrong.example.com"),
-            format!(
-                "token audience is https://wrong.example.com, expected {}",
-                helper::base_url()
-            ),
-        ),
-        ("exp", json!(now - 3600), "token expired".to_string()),
-    ] {
-        let (status, body) = rejected(token_with(claim, value)).await;
-        assert_eq!(status, 401, "{claim}");
-        assert_eq!(body.map(|body| body.message), Some(expected), "{claim}");
-    }
-}
-
-#[tokio::test]
-async fn test_put_forbids_a_token_no_claim_set_allows() {
-    let _uploads = helper::UPLOADS.lock().await;
-    let (status, body) = rejected(token_with("ref", json!("refs/heads/dev"))).await;
-    assert_eq!(status, 403);
-    let body = body.expect("a JSON error");
-    assert_eq!(body.error, ErrorCode::Forbidden);
-    assert_eq!(
-        body.message,
-        format!(
-            "repo:example-org/app:ref:refs/heads/main: no claim set for {} matched",
-            helper::ISSUER
-        )
-    );
 }
 
 #[tokio::test]

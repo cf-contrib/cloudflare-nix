@@ -5,7 +5,7 @@ variable "account_id" {
 
 variable "hostname" {
   type        = string
-  description = "The cache's hostname, whose URL is also the default OIDC audience: <worker_name>.<subdomain>.workers.dev, or a custom domain such as nix-cache.example.com (needs zone_id)."
+  description = "The cache's hostname: <worker_name>.<subdomain>.workers.dev, or a custom domain such as nix-cache.example.com (needs zone_id)."
 
   validation {
     condition     = can(regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+$", var.hostname))
@@ -52,23 +52,6 @@ variable "signing_key_secret" {
   })
   description = "Secrets Store secret holding the narinfo signing key, <key-name>:<base64> as emitted by `nix key generate-secret`. Terraform only references it; the key never enters state. null means every uploader must send signed narinfo."
   default     = null
-}
-
-variable "oidc_providers" {
-  type = list(object({
-    issuer   = string
-    audience = optional(string)
-    jwks_uri = optional(string)
-    typ      = optional(string)
-    claims   = list(map(string))
-  }))
-  description = "OIDC identity providers whose tokens may upload. A token is accepted if any claim set of its provider matches. audience defaults to the cache URL; jwks_uri to what the issuer's metadata says; typ, the type its tokens must have, to any (set \"at+jwt\" for a cloudflare-sts broker, so only its access tokens upload). Empty turns uploads off."
-  default     = []
-
-  validation {
-    condition     = alltrue([for i in var.oidc_providers : length(i.claims) > 0 && alltrue([for c in i.claims : length(c) > 0])])
-    error_message = "Every issuer needs at least one claim set, and no claim set may be empty."
-  }
 }
 
 variable "release_tag" {

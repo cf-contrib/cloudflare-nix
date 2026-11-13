@@ -1,7 +1,7 @@
 //! The cache's readiness check, for `/health/ready`.
 //!
 //! [`Config::from_env`] checks what it can without reading anything: the
-//! bindings and the provider list, and a Worker that fails it serves nothing.
+//! bindings, and a Worker that fails it serves nothing.
 //! [`ConfigCheck`] checks the rest of the configuration, what only reading it
 //! can: the signing key, if one is bound, read and parsed as an upload would
 //! sign with it. A key that's bound but can't be read, say one Secrets Store
@@ -9,9 +9,8 @@
 //! probe, with why in the log, not only as a `500` on the first upload that
 //! needs signing.
 //!
-//! It doesn't touch the bucket or fetch any issuer's keys: the endpoint is
-//! public, and anyone probing it would spend R2 operations and the issuers'
-//! rate limits.
+//! It doesn't touch the bucket: the endpoint is public, and anyone probing it
+//! would spend R2 operations.
 
 use std::{future::Future, sync::Arc};
 

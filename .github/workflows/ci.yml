@@ -29,8 +29,7 @@ jobs:
           git diff --exit-code .
       - name: Run Tests
         run: nix develop --command cargo test
-      # The Worker under wrangler dev, on a port and storage of its own, against
-      # the tests' stand-in OIDC issuer.
+      # The Worker under wrangler dev, on a port and storage of its own.
       - name: Run Integration Tests
         run: nix develop --command crates/cloudflare-nix-api/tests/run.sh
       - name: Validate Terraform Module

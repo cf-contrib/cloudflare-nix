@@ -8,9 +8,9 @@ using OpenAPI;
 using Versioning;
 
 /**
- * A Nix binary cache on Cloudflare Workers and R2. Reads are public. Uploads
- * need an OIDC token from an issuer the Worker trusts, as the password of
- * HTTP Basic credentials.
+ * A Nix binary cache on Cloudflare Workers and R2. It has no authentication
+ * or authorization: anyone who can reach the Worker can read and upload.
+ * Protect it with Cloudflare Access or a gateway of your own.
  *
  * Errors are JSON, `{ error, message }`. A request that doesn't fit
  * this document (a body over the size limit, the wrong content type) is
@@ -26,12 +26,6 @@ enum Versions {
   v1,
 }
 
-/**
- * An OIDC token from an issuer the Worker trusts, as the password. The
- * username isn't read.
- */
-model basic is BasicAuth;
-
 /** An error, `{ error, message }`. */
 model Error {
   error: ErrorCode;
@@ -42,12 +36,9 @@ model Error {
 
 enum ErrorCode {
   bad_request,
-  unauthorized,
-  forbidden,
   not_found,
   misconfigured,
   internal_error,
-  upstream_error,
 }
 
 // A response with no body, described by `Description`.
@@ -63,23 +54,6 @@ model BadRequest {
   @body body: Error;
 }
 
-/**
- * Missing or invalid credentials: no token, a token from an issuer the
- * Worker doesn't trust, or one for another audience or expired.
- */
-@error
-model Unauthorized {
-  @statusCode _: 401;
-  @body body: Error;
-}
-
-/** A valid token that no claim set for its issuer allows. */
-@error
-model Forbidden {
-  @statusCode _: 403;
-  @body body: Error;
-}
-
 /** No such object. */
 @error
 model NotFound {
@@ -88,7 +62,7 @@ model NotFound {
 }
 
 /**
- * The auth config, the bindings or the signing key are invalid
+ * The bindings or the signing key are invalid
  * (`misconfigured`), or a stored object is unreadable (`internal_error`).
  * Details go only to the logs.
  */
@@ -98,19 +72,8 @@ model InternalServerError {
   @body body: Error;
 }
 
-/** The token's issuer, its discovery document or its keys, couldn't be reached. */
-@error
-model BadGateway {
-  @statusCode _: 502;
-  @body body: Error;
-}
-
 /** What an upload can fail with. */
-alias UploadErrors =
-  | Unauthorized
-  | Forbidden
-  | InternalServerError
-  | BadGateway;
+alias UploadErrors = InternalServerError;
 
 @tag("CacheService")
 interface CacheService {
@@ -189,7 +152,6 @@ interface CacheService {
   @summary("Upload a narinfo")
   @operationId("putNarInfo")
   @route("/{hash}.narinfo")
-  @useAuth(basic)
   @put
   putNarInfo(
     /** The hash part of a store path. */
@@ -239,7 +201,6 @@ interface CacheService {
   @summary("Upload a NAR")
   @operationId("putNar")
   @route("/nar/{hash}.nar")
-  @useAuth(basic)
   @put
   putNar(
     /** The NAR's file hash, from the narinfo's `URL`. */

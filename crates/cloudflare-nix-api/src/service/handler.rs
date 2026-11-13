@@ -15,10 +15,10 @@
 //! the spec declares, so a status the spec doesn't list can't be returned. A
 //! failed bucket operation is an `internal_error` that doesn't say why.
 //!
-//! # Uploads
+//! # Access
 //!
-//! No method authorizes: by the time an upload reaches one, the auth
-//! [`layer`](super::layer) has.
+//! No method authenticates or authorizes: anyone who can reach the Worker can
+//! read and upload.
 
 use std::{fmt::Write, sync::Arc};
 
@@ -37,7 +37,7 @@ pub struct CacheServiceHandler {
 }
 
 impl CacheServiceHandler {
-    /// A handler over the Worker's configuration, shared with the auth layer.
+    /// A handler over the Worker's configuration, shared with the health check.
     pub fn new(config: Arc<Config>) -> Self {
         Self { config }
     }

@@ -30,13 +30,10 @@ impl ErrorCode {
         use axum::http::StatusCode;
         match self {
             ErrorCode::BadRequest => StatusCode::BAD_REQUEST,
-            ErrorCode::Unauthorized => StatusCode::UNAUTHORIZED,
-            ErrorCode::Forbidden => StatusCode::FORBIDDEN,
             ErrorCode::NotFound => StatusCode::NOT_FOUND,
             ErrorCode::Misconfigured | ErrorCode::InternalError => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
-            ErrorCode::UpstreamError => StatusCode::BAD_GATEWAY,
         }
     }
 }

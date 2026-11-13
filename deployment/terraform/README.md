@@ -4,6 +4,11 @@
 > Worker bundle to Cloudflare Workers with its R2 bucket, bindings and a
 > workers.dev URL (or, optionally, a custom domain). No `wrangler` or local
 > build is needed.
+>
+> The cache it deploys is **open**: it has no authentication or authorization,
+> so anyone who can reach the URL can read and upload. Put Cloudflare Access or
+> a gateway of your own in front of it; see
+> [Protecting the cache](#protecting-the-cache).
 
 ```hcl
 module "cloudflare_nix_api" {
@@ -17,32 +22,6 @@ module "cloudflare_nix_api" {
     secret_store_id = var.secret_store_id
     secret_name     = "cloudflare-nix-signing-key"
   }
-
-  # Who may upload: OIDC tokens from these providers that match a claim set.
-  oidc_providers = [
-    {
-      # GitHub Actions jobs in this org's repo, on main. The audience defaults
-      # to the cache URL. GitHub gives tokens to every repository on github.com,
-      # so pin your org in every claim set.
-      issuer = "https://token.actions.githubusercontent.com"
-      claims = [
-        {
-          repository_owner_id = "100000001" # gh api orgs/<org> --jq .id
-          repository_id       = "200000002" # gh api repos/<org>/<repo> --jq .id
-          ref                 = "refs/heads/main"
-        },
-      ]
-    },
-    {
-      # People, through a cloudflare-sts broker: its access tokens only, from
-      # the profile that issues them for this cache.
-      issuer = "https://cloudflare-sts-api.example.com"
-      typ    = "at+jwt"
-      claims = [
-        { profile = "nix-push" },
-      ]
-    },
-  ]
 }
 
 output "cloudflare_nix_api_url" {
@@ -84,9 +63,28 @@ enters Terraform state or the plan. Clients need the matching public key in
 `trusted-public-keys`: get it with
 `nix key convert-secret-to-public < secret-key-file`.
 
-Then set up upload credentials as described in the Worker's
-[Authentication](../../crates/cloudflare-nix-api/README.md#authentication) section, and push with
+Then [protect the cache](#protecting-the-cache), and push with
 `nix copy --to '<url>?compression=none'`: the cache stores uncompressed NARs.
+
+### Protecting the cache
+
+The Worker doesn't authenticate anyone: whoever can reach `url` can read the
+cache and write to it. That is the deployment's job, not the Worker's. Either:
+
+- **Cloudflare Access** in front of the Worker, as a self-hosted application on
+  its hostname (a custom domain, not a `workers.dev` one) with the policy you
+  want. The Worker is untouched; Terraform for the Access application sits
+  beside this module, not in it.
+- **A gateway of your own**, a reverse proxy or another Worker that
+  authenticates callers and forwards to this one.
+
+Nix sends credentials only as HTTP Basic from a netrc file, so a gateway
+that wants anything else, such as an Access login, needs a client that
+authenticates for it. [nix-vault](https://github.com/nixos-contrib/nix-vault)
+signs you in (HTTP Basic, or OAuth2 with a device or browser flow) and hands
+Nix a session netrc for the run. The Worker's
+[Access control](../../crates/cloudflare-nix-api/README.md#access-control)
+section has the details.
 
 ### Checking it's ready
 
@@ -100,7 +98,7 @@ module "cloudflare_nix_api_ready" {
   source = "git::https://github.com/tf-contrib/terraform-http-check.git?ref=v0.1.0"
 
   url  = "${module.cloudflare_nix_api.url}/health/ready"
-  hint = "503 if the signing key can't be read or isn't valid, 500 if a binding or the provider list is wrong. Workers Logs says why (unready: or misconfigured:)."
+  hint = "503 if the signing key can't be read or isn't valid, 500 if a binding is wrong. Workers Logs says why (unready: or misconfigured:)."
 }
 ```
 
@@ -114,12 +112,11 @@ runners whose egress is allowlisted.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `account_id` | yes | | Cloudflare account ID. |
-| `hostname` | yes | | `<worker_name>.<subdomain>.workers.dev`, or a custom domain (needs `zone_id`). Its URL is also the default OIDC audience. |
+| `hostname` | yes | | `<worker_name>.<subdomain>.workers.dev`, or a custom domain (needs `zone_id`). |
 | `zone_id` | for a custom domain | `null` | Zone that holds a custom-domain `hostname`. |
 | `bucket_name` | yes | | R2 bucket to create for `.narinfo` and `.nar` objects. |
 | `expire_after_days` | no | `45` | Delete objects this many days after upload. `null` keeps them. |
 | `signing_key_secret` | no | `null` | `{ secret_store_id, secret_name }` of the signing key. `null`: uploaders must sign. |
-| `oidc_providers` | no | `[]` | Identity providers whose tokens may upload: `{ issuer, audience?, jwks_uri?, typ?, claims }`. `audience` defaults to the cache URL; `typ` is the type the provider's tokens must have, `"at+jwt"` for a cloudflare-sts broker; `claims` is a list of claim sets, any one of which must match. Empty turns uploads off. See the Worker's [Authentication](../../crates/cloudflare-nix-api/README.md#authentication). |
 | `release_tag` | no | this module's release | Release to deploy, e.g. `v1.2.3`, or `"latest"`. |
 | `bundle_dir` | no | `null` | A local `worker-build --release` output directory to deploy instead of a release. |
 | `worker_name` | no | `cloudflare-nix-api` | Cloudflare Worker script name. |
@@ -129,7 +126,7 @@ runners whose egress is allowlisted.
 
 | Output | Description |
 |---|---|
-| `url` | The cache URL, for `substituters`, `nix copy --to`, and the audience uploaders request their tokens for. |
+| `url` | The cache URL, for `substituters` and `nix copy --to`. |
 | `worker_name` | Deployed Worker script name. |
 | `bucket_name` | R2 bucket backing the cache. |
 | `release_tag` | Release that was deployed, or `"local"` for `bundle_dir`. |
@@ -139,20 +136,6 @@ runners whose egress is allowlisted.
 
 Bump the `ref` in `source` and run `tofu apply`. The module downloads that
 release's bundle, uploads a new Worker version and shifts all traffic to it.
-
-### From 0.4
-
-Uploads authenticate with OIDC tokens from any provider you list, instead of
-GitHub tokens or GitHub Actions only:
-
-- `github_owner_id`, `github_oidc_audience` and `github_oidc_rules` become one
-  `oidc_providers` entry for `https://token.actions.githubusercontent.com`. Add
-  `repository_owner_id` to each of its claim sets, which used to be implied,
-  and write any `*` only at the end of a pattern.
-- `github_repository` is gone, and with it uploads with a person's GitHub
-  token. Give people a token from an issuer such as Cloudflare Access instead.
-- The bindings are renamed `CLOUDFLARE_NIX_API_*`. The module sets them, so
-  there's nothing to do unless you read them elsewhere.
 
 ## Migrating from `examples/terraform`
 
