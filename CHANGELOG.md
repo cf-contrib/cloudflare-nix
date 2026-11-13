@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/nixos-contrib/nix-cloudflare/compare/v0.12.0...v0.12.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* **terraform:** download the release from nixos-contrib ([95c3c7a](https://github.com/nixos-contrib/nix-cloudflare/commit/95c3c7a397ad60da5f122fa12da5c21e6bc2f045))
+
 ## [0.12.0](https://github.com/nixos-contrib/nix-cloudflare/compare/v0.11.2...v0.12.0) (2026-11-13)
 
 

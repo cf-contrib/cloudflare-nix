@@ -1173,7 +1173,7 @@ dependencies = [
 
 [[package]]
 name = "nix-cloudflare-api"
-version = "0.12.0"
+version = "0.12.1"
 dependencies = [
  "async-trait",
  "axum",
@@ -1188,7 +1188,7 @@ dependencies = [
 
 [[package]]
 name = "nix-cloudflare-sdk"
-version = "0.12.0"
+version = "0.12.1"
 dependencies = [
  "async-trait",
  "axum",
