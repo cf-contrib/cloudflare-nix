@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.12.0](https://github.com/nixos-contrib/nix-cloudflare/compare/v0.11.2...v0.12.0) (2026-11-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* the crates are nix-cloudflare-api and nix-cloudflare-sdk, the Worker is named nix-cloudflare-api by default, and the bindings are NIX_CLOUDFLARE_API_BUCKET and NIX_CLOUDFLARE_API_SECRET. The module is sourced from nixos-contrib/nix-cloudflare.
+* the Worker no longer authenticates or authorizes requests. CLOUDFLARE_NIX_API_OIDC_PROVIDERS and the oidc_providers module input are gone, and uploads need no token. Put Cloudflare Access or a gateway in front of a cache that must not be open.
+
+### Code Refactoring
+
+* remove authentication and authorization from the Worker ([8022d24](https://github.com/nixos-contrib/nix-cloudflare/commit/8022d242ae958069e3b7f4401bb30cc88009e359))
+* rename cloudflare-nix to nix-cloudflare ([b59ed71](https://github.com/nixos-contrib/nix-cloudflare/commit/b59ed713481ec569d7328e47586f60e202d40a7e))
+
 ## [0.11.2](https://github.com/cf-contrib/cloudflare-nix/compare/v0.11.1...v0.11.2) (2026-11-07)
 
 

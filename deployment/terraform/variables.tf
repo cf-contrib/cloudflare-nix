@@ -57,7 +57,7 @@ variable "signing_key_secret" {
 variable "release_tag" {
   type        = string
   description = "nix-cloudflare release to deploy, e.g. v1.2.3, or \"latest\". Defaults to the release this module comes from."
-  default     = "v0.11.2" # x-release-please-version
+  default     = "v0.12.0" # x-release-please-version
 }
 
 variable "bundle_dir" {
