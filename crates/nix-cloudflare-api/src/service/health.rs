@@ -14,7 +14,7 @@
 
 use std::{future::Future, sync::Arc};
 
-use cloudflare_nix_sdk::v1::{HealthCheck, HealthCheckError, NarInfoSigKey};
+use nix_cloudflare_sdk::v1::{HealthCheck, HealthCheckError, NarInfoSigKey};
 use worker::{console_error, send::SendFuture};
 
 use super::config::{Config, SECRET_KEY};

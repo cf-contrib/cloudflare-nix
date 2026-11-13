@@ -1,6 +1,6 @@
-# cloudflare-nix-api
+# nix-cloudflare-api
 
-> The Worker half of [cloudflare-nix](../..): a Nix binary cache on Cloudflare
+> The Worker half of [nix-cloudflare](../..): a Nix binary cache on Cloudflare
 > Workers and R2, written in Rust. It serves narinfo and NARs from R2 and signs
 > uploads.
 
@@ -15,7 +15,7 @@
 1. **Create the signing key** and store it in [Secrets Store](https://developers.cloudflare.com/secrets-store/), so it never passes through your deploy tooling. Wrangler prompts for the value: paste the whole `<key-name>:<base64>` line.
    ```sh
    nix key generate-secret --key-name cache.example.com-1
-   wrangler secrets-store secret create <store-id> --name cloudflare-nix-signing-key --scopes workers --remote
+   wrangler secrets-store secret create <store-id> --name nix-cloudflare-signing-key --scopes workers --remote
    ```
    Clients need the matching public key in `trusted-public-keys` (`nix key convert-secret-to-public`, or the `PublicKey:` line of `<cache-url>/nix-cache-info`).
 2. **Decide how to protect it**: [Access control](#access-control). The Worker doesn't.
@@ -28,8 +28,8 @@
 
 | Binding | Type | Required | Description |
 |---|---|---|---|
-| `CLOUDFLARE_NIX_API_BUCKET` | R2 bucket | yes | Stores `.narinfo` and `.nar` objects. |
-| `CLOUDFLARE_NIX_API_SECRET` | Secrets Store secret | conditional | `<key-name>:<base64>`, as emitted by `nix key generate-secret`. Required unless every uploader sends signed narinfo. Only a Secrets Store binding is taken: bound as a plain secret or var, the Worker refuses to start, so the key never passes through Terraform or a command line. |
+| `NIX_CLOUDFLARE_API_BUCKET` | R2 bucket | yes | Stores `.narinfo` and `.nar` objects. |
+| `NIX_CLOUDFLARE_API_SECRET` | Secrets Store secret | conditional | `<key-name>:<base64>`, as emitted by `nix key generate-secret`. Required unless every uploader sends signed narinfo. Only a Secrets Store binding is taken: bound as a plain secret or var, the Worker refuses to start, so the key never passes through Terraform or a command line. |
 
 ## Access control
 
@@ -73,15 +73,15 @@ the netrc, for the length of the job.
 
 ## HTTP API
 
-The API is specified by the SDK's [OpenAPI document](../cloudflare-nix-sdk/openapi/nix/cache/v1/cachev1.yaml).
-The Worker implements the server [generated from it](../cloudflare-nix-sdk), so
+The API is specified by the SDK's [OpenAPI document](../nix-cloudflare-sdk/openapi/nix/cache/v1/cachev1.yaml).
+The Worker implements the server [generated from it](../nix-cloudflare-sdk), so
 requests are checked against the document before a handler sees them. Uploads
 must use the content type Nix sends: `text/x-nix-narinfo` for narinfo and
 `application/x-nix-nar` for NARs.
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/nix-cache-info` | Cache metadata (priority, etc.), and the signing key's public half as `PublicKey: <key-name>:<base64>` when `CLOUDFLARE_NIX_API_SECRET` is set. Nix ignores that line: it's there to copy into `trusted-public-keys`. |
+| `GET` | `/nix-cache-info` | Cache metadata (priority, etc.), and the signing key's public half as `PublicKey: <key-name>:<base64>` when `NIX_CLOUDFLARE_API_SECRET` is set. Nix ignores that line: it's there to copy into `trusted-public-keys`. |
 | `GET` | `/<hash>.narinfo` | Narinfo for a store path. |
 | `HEAD` | `/<hash>.narinfo` | Existence check for a narinfo (200 / 404). |
 | `PUT` | `/<hash>.narinfo` | Upload a narinfo. |
@@ -107,7 +107,7 @@ type, `413` for a body over 64 MiB, `400` or `422` for a malformed request.
 
 **Validation and signing:** the Worker parses each uploaded narinfo, checks its
 format, and requires its `StorePath` to match the request's hash. Every stored
-narinfo carries a `Sig:`. If the uploader didn't sign and `CLOUDFLARE_NIX_API_SECRET`
+narinfo carries a `Sig:`. If the uploader didn't sign and `NIX_CLOUDFLARE_API_SECRET`
 is set, the Worker signs the upload itself. Otherwise the `PUT` returns `400`.
 
 ## Security
@@ -162,7 +162,7 @@ nix develop -c tests/run.sh                                  # this directory
 ```
 
 To run them against a `wrangler dev` you've started instead, set
-`CLOUDFLARE_NIX_API_URL` if it isn't on `http://127.0.0.1:8787`:
+`NIX_CLOUDFLARE_API_URL` if it isn't on `http://127.0.0.1:8787`:
 
 ```bash
 nix develop -c cargo test --features integration
@@ -170,5 +170,5 @@ nix develop -c cargo test --features integration
 
 ## Dependencies
 
-- [`cloudflare-nix-sdk`](../cloudflare-nix-sdk), the API's types, the server traits the Worker implements, and the narinfo format: parsing, validation and signing
+- [`nix-cloudflare-sdk`](../nix-cloudflare-sdk), the API's types, the server traits the Worker implements, and the narinfo format: parsing, validation and signing
 - [`worker`](https://crates.io/crates/worker) and [`worker-macros`](https://crates.io/crates/worker-macros), the Cloudflare Workers Rust SDK, with [`axum`](https://crates.io/crates/axum), which serves the SDK's router

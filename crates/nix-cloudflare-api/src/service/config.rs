@@ -13,17 +13,17 @@
 use worker::{Bucket, Env, Error, SecretStore, js_sys, send::SendWrapper, wasm_bindgen::JsValue};
 
 /// The binding of the R2 bucket every narinfo and NAR is stored in.
-pub const BUCKET_KEY: &str = "CLOUDFLARE_NIX_API_BUCKET";
+pub const BUCKET_KEY: &str = "NIX_CLOUDFLARE_API_BUCKET";
 
 /// The binding of the narinfo signing key, `<key-name>:<base64>`. Optional:
 /// without it, only narinfo the uploader signed can be stored.
-pub const SECRET_KEY: &str = "CLOUDFLARE_NIX_API_SECRET";
+pub const SECRET_KEY: &str = "NIX_CLOUDFLARE_API_SECRET";
 
 /// What the Worker is configured with, from its bindings.
 pub struct Config {
-    /// `CLOUDFLARE_NIX_API_BUCKET`.
+    /// `NIX_CLOUDFLARE_API_BUCKET`.
     bucket: BucketConfig,
-    /// `CLOUDFLARE_NIX_API_SECRET`'s binding, not yet its value. None signs
+    /// `NIX_CLOUDFLARE_API_SECRET`'s binding, not yet its value. None signs
     /// nothing.
     signing_key: Option<Secret>,
 }
@@ -33,8 +33,8 @@ impl Config {
     ///
     /// # Errors
     ///
-    /// When `CLOUDFLARE_NIX_API_BUCKET` isn't bound to an R2 bucket,
-    /// or `CLOUDFLARE_NIX_API_SECRET` is bound but not from Secrets Store.
+    /// When `NIX_CLOUDFLARE_API_BUCKET` isn't bound to an R2 bucket,
+    /// or `NIX_CLOUDFLARE_API_SECRET` is bound but not from Secrets Store.
     pub fn from_env(env: &Env) -> worker::Result<Self> {
         Ok(Self {
             bucket: BucketConfig::from_env(env)?,

@@ -250,43 +250,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cloudflare-nix-api"
-version = "0.11.2"
-dependencies = [
- "async-trait",
- "axum",
- "bytes",
- "cloudflare-nix-sdk",
- "reqwest",
- "tokio",
- "tower-service",
- "worker",
- "worker-macros",
-]
-
-[[package]]
-name = "cloudflare-nix-sdk"
-version = "0.11.2"
-dependencies = [
- "async-trait",
- "axum",
- "base64 0.23.1",
- "bytes",
- "ed25519-dalek",
- "futures-util",
- "http-body-util",
- "jsonschema 0.61.1",
- "mime",
- "openapi-to-rust",
- "reqwest",
- "reqwest-middleware",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
 name = "cmake"
 version = "0.1.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1206,6 +1169,43 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "nix-cloudflare-api"
+version = "0.11.2"
+dependencies = [
+ "async-trait",
+ "axum",
+ "bytes",
+ "nix-cloudflare-sdk",
+ "reqwest",
+ "tokio",
+ "tower-service",
+ "worker",
+ "worker-macros",
+]
+
+[[package]]
+name = "nix-cloudflare-sdk"
+version = "0.11.2"
+dependencies = [
+ "async-trait",
+ "axum",
+ "base64 0.23.1",
+ "bytes",
+ "ed25519-dalek",
+ "futures-util",
+ "http-body-util",
+ "jsonschema 0.61.1",
+ "mime",
+ "openapi-to-rust",
+ "reqwest",
+ "reqwest-middleware",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]

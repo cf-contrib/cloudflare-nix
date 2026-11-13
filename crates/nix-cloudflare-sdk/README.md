@@ -1,13 +1,13 @@
-# cloudflare-nix-sdk
+# nix-cloudflare-sdk
 
-> The HTTP API of [cloudflare-nix](../..), as an OpenAPI document, and the Rust
-> generated from it: the types, the server traits the [Worker](../cloudflare-nix-api)
+> The HTTP API of [nix-cloudflare](../..), as an OpenAPI document, and the Rust
+> generated from it: the types, the server traits the [Worker](../nix-cloudflare-api)
 > implements, and a client.
 
 Everything is under `v1`:
 
 ```rust
-use cloudflare_nix_sdk::v1::*;
+use nix_cloudflare_sdk::v1::*;
 ```
 
 ## What is in it
@@ -22,9 +22,9 @@ use cloudflare_nix_sdk::v1::*;
 ## Calling the API
 
 ```rust
-use cloudflare_nix_sdk::v1::HttpClient;
+use nix_cloudflare_sdk::v1::HttpClient;
 
-let client = HttpClient::new().with_base_url("https://cloudflare-nix-api.example.workers.dev");
+let client = HttpClient::new().with_base_url("https://nix-cloudflare-api.example.workers.dev");
 let info = client.get_nar_info("j5m1qd2dbsmhq0mw13yb8wijnm3pq4z0").await?;
 client.put_nar_info("j5m1qd2dbsmhq0mw13yb8wijnm3pq4z0", info).await?;
 ```

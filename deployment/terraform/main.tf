@@ -46,7 +46,7 @@ resource "cloudflare_worker_version" "this" {
   bindings = concat(
     [
       {
-        name        = "CLOUDFLARE_NIX_API_BUCKET"
+        name        = "NIX_CLOUDFLARE_API_BUCKET"
         type        = "r2_bucket"
         bucket_name = cloudflare_r2_bucket.this.name
       },
@@ -54,7 +54,7 @@ resource "cloudflare_worker_version" "this" {
     # Only ever from Secrets Store, so the signing key never enters Terraform state.
     var.signing_key_secret == null ? [] : [
       {
-        name        = "CLOUDFLARE_NIX_API_SECRET"
+        name        = "NIX_CLOUDFLARE_API_SECRET"
         type        = "secrets_store_secret"
         store_id    = var.signing_key_secret.secret_store_id
         secret_name = var.signing_key_secret.secret_name

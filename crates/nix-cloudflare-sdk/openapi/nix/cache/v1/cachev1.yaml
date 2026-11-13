@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: cloudflare-nix
+  title: nix-cloudflare
   license:
     name: MIT
   description: |-
@@ -221,7 +221,7 @@ paths:
       description: |-
         Parses and validates the narinfo, and requires its `StorePath` to match
         the hash. It is stored as sent. If it has no `Sig:`, the Worker signs it
-        with `CLOUDFLARE_NIX_API_SECRET`, and rejects it when no key is set.
+        with `NIX_CLOUDFLARE_API_SECRET`, and rejects it when no key is set.
       parameters:
         - name: hash
           in: path

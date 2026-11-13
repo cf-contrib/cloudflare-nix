@@ -1,5 +1,5 @@
 {
-  description = "cloudflare-nix - Cloudflare-native Nix binary cache using Workers, R2, and Rust.";
+  description = "nix-cloudflare - Cloudflare-native Nix binary cache using Workers, R2, and Rust.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -29,7 +29,7 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          name = "cloudflare-nix";
+          name = "nix-cloudflare";
           packages = [
             pkgs.nodejs
             pkgs.opentofu

@@ -1,4 +1,4 @@
-name = "cloudflare-nix-api"
+name = "nix-cloudflare-api"
 main = "build/index.js"
 compatibility_date = "2026-05-14"
 
@@ -6,7 +6,7 @@ compatibility_date = "2026-05-14"
 command = "worker-build --dev"
 
 [[r2_buckets]]
-binding = "CLOUDFLARE_NIX_API_BUCKET"
+binding = "NIX_CLOUDFLARE_API_BUCKET"
 bucket_name = "nix-bucket-dev"
 
 # Secrets Store only: a plain `wrangler secret`, or a `--var`, is refused. For
@@ -14,6 +14,6 @@ bucket_name = "nix-bucket-dev"
 #   wrangler secrets-store secret create 00000000000000000000000000000000 --name signing-key --scopes workers
 # Without it, only narinfo the uploader signed can be stored.
 [[secrets_store_secrets]]
-binding = "CLOUDFLARE_NIX_API_SECRET"
+binding = "NIX_CLOUDFLARE_API_SECRET"
 store_id = "00000000000000000000000000000000"
 secret_name = "signing-key"

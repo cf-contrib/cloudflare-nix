@@ -1,4 +1,4 @@
-//! The Worker half of cloudflare-nix: a Nix binary cache on Cloudflare Workers
+//! The Worker half of nix-cloudflare: a Nix binary cache on Cloudflare Workers
 //! and R2.
 //!
 //! Each request reads the Worker's configuration from its bindings, then
@@ -15,7 +15,7 @@ mod service;
 use std::sync::Arc;
 
 use axum::response::{IntoResponse, Response as HttpResponse};
-use cloudflare_nix_sdk::v1::{self, ErrorCode};
+use nix_cloudflare_sdk::v1::{self, ErrorCode};
 use tower_service::Service;
 use worker::*;
 

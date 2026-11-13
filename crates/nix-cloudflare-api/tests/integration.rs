@@ -2,7 +2,7 @@
 
 mod helper;
 
-use cloudflare_nix_sdk::v1::{
+use nix_cloudflare_sdk::v1::{
     ApiOpError, Error, ErrorCode, GetNarApiError, GetNarInfoApiError, HealthClient,
 };
 
@@ -25,10 +25,10 @@ async fn test_get_nix_cache_info() {
         .get_nix_cache_info()
         .await
         .expect("the request failed");
-    // run.sh makes a new cloudflare-nix-test key each run, so only its shape is
+    // run.sh makes a new nix-cloudflare-test key each run, so only its shape is
     // known: an Ed25519 public key is 32 bytes, 44 characters of base64.
     let (metadata, public_key) = info
-        .split_once("PublicKey: cloudflare-nix-test:")
+        .split_once("PublicKey: nix-cloudflare-test:")
         .expect("the signing key's public half is listed");
     assert_eq!(
         metadata,

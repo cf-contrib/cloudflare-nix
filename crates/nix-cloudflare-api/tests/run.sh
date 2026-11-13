@@ -11,13 +11,13 @@ PORT=8789
 URL=http://127.0.0.1:$PORT
 STORE=00000000000000000000000000000000
 PERSIST=.wrangler/integration
-LOG=${CLOUDFLARE_NIX_API_LOG:-$PWD/.wrangler/integration.log}
+LOG=${NIX_CLOUDFLARE_API_LOG:-$PWD/.wrangler/integration.log}
 trap '[ -n "${DEV:-}" ] && kill "$DEV" 2>/dev/null; wait 2>/dev/null || true' EXIT
 
 rm -rf "$PERSIST" && mkdir -p "$PERSIST"
 # --value= keeps the key off a prompt; it's a throwaway, in a throwaway store.
 wrangler secrets-store secret create "$STORE" --name signing-key --scopes workers \
-  --value="$(nix key generate-secret --key-name cloudflare-nix-test)" --persist-to "$PERSIST" >/dev/null
+  --value="$(nix key generate-secret --key-name nix-cloudflare-test)" --persist-to "$PERSIST" >/dev/null
 
 wrangler dev --port "$PORT" --persist-to "$PERSIST" >"$LOG" 2>&1 &
 DEV=$!
@@ -27,4 +27,4 @@ for _ in $(seq 120); do
   sleep 1
 done
 
-CLOUDFLARE_NIX_API_URL="$URL" cargo test --features integration --test integration "$@"
+NIX_CLOUDFLARE_API_URL="$URL" cargo test --features integration --test integration "$@"

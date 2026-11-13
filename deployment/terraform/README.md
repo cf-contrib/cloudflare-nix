@@ -1,6 +1,6 @@
-# cloudflare-nix Terraform module
+# nix-cloudflare Terraform module
 
-> The Terraform / OpenTofu half of [cloudflare-nix](../..): deploys the released
+> The Terraform / OpenTofu half of [nix-cloudflare](../..): deploys the released
 > Worker bundle to Cloudflare Workers with its R2 bucket, bindings and a
 > workers.dev URL (or, optionally, a custom domain). No `wrangler` or local
 > build is needed.
@@ -11,21 +11,21 @@
 > [Protecting the cache](#protecting-the-cache).
 
 ```hcl
-module "cloudflare_nix_api" {
-  source = "git::https://github.com/cf-contrib/cloudflare-nix.git//deployment/terraform?ref=v0.11.2" # x-release-please-version
+module "nix_cloudflare_api" {
+  source = "git::https://github.com/nixos-contrib/nix-cloudflare.git//deployment/terraform?ref=v0.11.2" # x-release-please-version
 
   account_id  = var.account_id
-  hostname    = "cloudflare-nix-api.example.workers.dev"
+  hostname    = "nix-cloudflare-api.example.workers.dev"
   bucket_name = "nix-cache"
 
   signing_key_secret = {
     secret_store_id = var.secret_store_id
-    secret_name     = "cloudflare-nix-signing-key"
+    secret_name     = "nix-cloudflare-signing-key"
   }
 }
 
-output "cloudflare_nix_api_url" {
-  value = module.cloudflare_nix_api.url
+output "nix_cloudflare_api_url" {
+  value = module.nix_cloudflare_api.url
 }
 ```
 
@@ -50,12 +50,12 @@ deploys the Worker bundle of the release its `ref` points to.
 # paste the whole <key-name>:<base64> line.
 nix key generate-secret --key-name cache.example.com-1
 wrangler secrets-store store list --remote     # note the store ID
-wrangler secrets-store secret create <store-id> --name cloudflare-nix-signing-key --scopes workers --remote
+wrangler secrets-store secret create <store-id> --name nix-cloudflare-signing-key --scopes workers --remote
 
 export CLOUDFLARE_API_TOKEN=...
 tofu init
 tofu apply
-curl -fsS "$(tofu output -raw cloudflare_nix_api_url)/health/ready"   # 500 if a binding is wrong, 503 if the key can't be read
+curl -fsS "$(tofu output -raw nix_cloudflare_api_url)/health/ready"   # 500 if a binding is wrong, 503 if the key can't be read
 ```
 
 Terraform only references the secret by store ID and name. The key never
@@ -83,7 +83,7 @@ that wants anything else, such as an Access login, needs a client that
 authenticates for it. [nix-vault](https://github.com/nixos-contrib/nix-vault)
 signs you in (HTTP Basic, or OAuth2 with a device or browser flow) and hands
 Nix a session netrc for the run. The Worker's
-[Access control](../../crates/cloudflare-nix-api/README.md#access-control)
+[Access control](../../crates/nix-cloudflare-api/README.md#access-control)
 section has the details.
 
 ### Checking it's ready
@@ -94,10 +94,10 @@ when it isn't ready, add
 beside it:
 
 ```hcl
-module "cloudflare_nix_api_ready" {
+module "nix_cloudflare_api_ready" {
   source = "git::https://github.com/tf-contrib/terraform-http-check.git?ref=v0.1.0"
 
-  url  = "${module.cloudflare_nix_api.url}/health/ready"
+  url  = "${module.nix_cloudflare_api.url}/health/ready"
   hint = "503 if the signing key can't be read or isn't valid, 500 if a binding is wrong. Workers Logs says why (unready: or misconfigured:)."
 }
 ```
@@ -119,7 +119,7 @@ runners whose egress is allowlisted.
 | `signing_key_secret` | no | `null` | `{ secret_store_id, secret_name }` of the signing key. `null`: uploaders must sign. |
 | `release_tag` | no | this module's release | Release to deploy, e.g. `v1.2.3`, or `"latest"`. |
 | `bundle_dir` | no | `null` | A local `worker-build --release` output directory to deploy instead of a release. |
-| `worker_name` | no | `cloudflare-nix-api` | Cloudflare Worker script name. |
+| `worker_name` | no | `nix-cloudflare-api` | Cloudflare Worker script name. |
 | `worker_compatibility_date` | no | `2026-05-14` | Workers runtime compatibility date. |
 
 ## Outputs
@@ -146,29 +146,29 @@ first `apply`:
 ```hcl
 moved {
   from = cloudflare_worker.nix_cache
-  to   = module.cloudflare_nix_api.cloudflare_worker.this
+  to   = module.nix_cloudflare_api.cloudflare_worker.this
 }
 moved {
   from = cloudflare_worker_version.nix_cache
-  to   = module.cloudflare_nix_api.cloudflare_worker_version.this
+  to   = module.nix_cloudflare_api.cloudflare_worker_version.this
 }
 moved {
   from = cloudflare_workers_deployment.nix_cache
-  to   = module.cloudflare_nix_api.cloudflare_workers_deployment.this
+  to   = module.nix_cloudflare_api.cloudflare_workers_deployment.this
 }
 moved {
   from = cloudflare_r2_bucket.nix
-  to   = module.cloudflare_nix_api.cloudflare_r2_bucket.this
+  to   = module.nix_cloudflare_api.cloudflare_r2_bucket.this
 }
 moved {
   from = cloudflare_r2_bucket_lifecycle.nix
-  to   = module.cloudflare_nix_api.cloudflare_r2_bucket_lifecycle.this[0]
+  to   = module.nix_cloudflare_api.cloudflare_r2_bucket_lifecycle.this[0]
 }
 ```
 
 - `r2_bucket_name` is now `bucket_name`, and `hostname` is new.
 - `nix_secret` is gone: put the key in Secrets Store and set `signing_key_secret`. It then no longer sits in your Terraform state; remove the old value from any `terraform.tfvars`.
-- The bindings are named `CLOUDFLARE_NIX_API_*`; the module sets them.
+- The bindings are named `NIX_CLOUDFLARE_API_*`; the module sets them.
 
 ## Development
 

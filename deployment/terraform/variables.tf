@@ -56,7 +56,7 @@ variable "signing_key_secret" {
 
 variable "release_tag" {
   type        = string
-  description = "cloudflare-nix release to deploy, e.g. v1.2.3, or \"latest\". Defaults to the release this module comes from."
+  description = "nix-cloudflare release to deploy, e.g. v1.2.3, or \"latest\". Defaults to the release this module comes from."
   default     = "v0.11.2" # x-release-please-version
 }
 
@@ -69,7 +69,7 @@ variable "bundle_dir" {
 variable "worker_name" {
   type        = string
   description = "Cloudflare Worker script name."
-  default     = "cloudflare-nix-api"
+  default     = "nix-cloudflare-api"
 }
 
 variable "worker_compatibility_date" {

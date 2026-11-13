@@ -1,13 +1,13 @@
-# cloudflare-nix
+# nix-cloudflare
 
 > A Nix binary cache on Cloudflare Workers and R2: substitutes come from
 > Cloudflare's edge. It has no authentication or authorization of its own: it's
 > open, and you protect it with Cloudflare Access or a gateway of your own.
 
-[![CI](https://github.com/cf-contrib/cloudflare-nix/actions/workflows/ci.yml/badge.svg)](https://github.com/cf-contrib/cloudflare-nix/actions/workflows/ci.yml)
+[![CI](https://github.com/nixos-contrib/nix-cloudflare/actions/workflows/ci.yml/badge.svg)](https://github.com/nixos-contrib/nix-cloudflare/actions/workflows/ci.yml)
 [![Rust](https://img.shields.io/badge/Rust-black?logo=rust)](https://www.rust-lang.org/)
 [![Nix Flake](https://img.shields.io/badge/Nix-Flake-5277C3?logo=nixos&logoColor=white)](https://wiki.nixos.org/wiki/Flakes)
-[![License: MIT](https://img.shields.io/github/license/cf-contrib/cloudflare-nix)](LICENSE)
+[![License: MIT](https://img.shields.io/github/license/nixos-contrib/nix-cloudflare)](LICENSE)
 
 > [!WARNING]
 > **Pre-1.0.** The Worker's bindings and the module's inputs may still change
@@ -20,8 +20,8 @@
 
 | | Ships as | What it is |
 |---|---|---|
-| [`crates/cloudflare-nix-api`](crates/cloudflare-nix-api) | `index.js` + `index_bg.wasm` in [Releases](https://github.com/cf-contrib/cloudflare-nix/releases) | The server, a Cloudflare Worker written in Rust. Serves narinfo and NARs from R2, and validates and signs uploads. It has no authentication or authorization. |
-| [`crates/cloudflare-nix-sdk`](crates/cloudflare-nix-sdk) | A Rust crate in this workspace; not published | The HTTP API's [OpenAPI document](crates/cloudflare-nix-sdk/openapi/nix/cache/v1/cachev1.yaml), and the types, server traits and client generated from it; hand-written beside them, the narinfo format and the health endpoints. The Worker builds on it. |
+| [`crates/nix-cloudflare-api`](crates/nix-cloudflare-api) | `index.js` + `index_bg.wasm` in [Releases](https://github.com/nixos-contrib/nix-cloudflare/releases) | The server, a Cloudflare Worker written in Rust. Serves narinfo and NARs from R2, and validates and signs uploads. It has no authentication or authorization. |
+| [`crates/nix-cloudflare-sdk`](crates/nix-cloudflare-sdk) | A Rust crate in this workspace; not published | The HTTP API's [OpenAPI document](crates/nix-cloudflare-sdk/openapi/nix/cache/v1/cachev1.yaml), and the types, server traits and client generated from it; hand-written beside them, the narinfo format and the health endpoints. The Worker builds on it. |
 | [`deployment/terraform`](deployment/terraform) | `//deployment/terraform?ref=<version>` | Deploys the released Worker with its R2 bucket and bindings. |
 
 The Worker and the module are released together from one tag.
@@ -32,7 +32,7 @@ The Worker and the module are released together from one tag.
 sequenceDiagram
     participant Client as nix (substitute, copy)
     participant Gateway as Access or your gateway
-    participant Api as cloudflare-nix-api
+    participant Api as nix-cloudflare-api
     participant R2 as R2 bucket
 
     Client->>Gateway: GET narinfo / NAR, PUT narinfo / NAR
@@ -57,7 +57,7 @@ Nix supports S3-compatible caches natively with the [`s3://`](https://nix.dev/ma
 |---|---|---|---|
 | `s3://` to R2 | An S3 key pair per uploader | On every uploader (`secret-key-files`) | Nix built-in; opaque blob storage |
 | Public R2 bucket + `s3://` uploads | An S3 key pair per uploader | On every uploader | Anonymous reads via a custom domain |
-| **cloudflare-nix** | **None: open, you add Access or a gateway** | **In the Worker (Secrets Store)** | Validates narinfo; one-request mass query |
+| **nix-cloudflare** | **None: open, you add Access or a gateway** | **In the Worker (Secrets Store)** | Validates narinfo; one-request mass query |
 
 If S3 keys on every uploader are acceptable to you, `s3://` to R2 is less to run.
 
@@ -69,7 +69,7 @@ Also: this is a hobby project. I wanted an excuse to spend more time with Cloudf
 2. **Deploy the Worker** with the [Terraform module](deployment/terraform), on workers.dev (a custom domain is optional), then check that `<cache-url>/health/ready` returns `200`: the bindings were accepted and the signing key can be read.
 3. **Point Nix at it** in `nix.conf`:
    ```ini
-   substituters = https://cloudflare-nix-api.example.workers.dev https://cache.nixos.org
+   substituters = https://nix-cloudflare-api.example.workers.dev https://cache.nixos.org
    trusted-public-keys = cache.example.com-1:<base64-public-key> cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
    ```
 4. **Upload** with `nix copy --to 'https://<cache>?compression=none' <paths>` (the cache stores uncompressed NARs). The Worker asks for no credentials: if you've put a gateway in front, send what it wants. Nix sends credentials only from a netrc file, as HTTP Basic.
@@ -87,7 +87,7 @@ Nix can't answer an Access login itself. To sign in from Nix, use
 signs you in, with HTTP Basic or OAuth2, and runs Nix with a session netrc
 that carries the credentials, for a gateway that takes them as HTTP Basic. This
 project has not tried Nix against Cloudflare Access directly. See the
-[Worker's README](crates/cloudflare-nix-api#access-control) for more.
+[Worker's README](crates/nix-cloudflare-api#access-control) for more.
 
 ## Development
 
@@ -98,7 +98,7 @@ nix develop -c cargo test                                   # the Worker's and t
 (cd deployment/terraform && nix develop -c sh -c "tofu init -backend=false && tofu test")   # the module's tests
 ```
 
-Each directory's README has the rest: the [Worker's](crates/cloudflare-nix-api#development) covers the bundle, `wrangler dev` and the integration tests; the [SDK's](crates/cloudflare-nix-sdk#generated-code) how its code is generated; and the [module's](deployment/terraform#development) its tests.
+Each directory's README has the rest: the [Worker's](crates/nix-cloudflare-api#development) covers the bundle, `wrangler dev` and the integration tests; the [SDK's](crates/nix-cloudflare-sdk#generated-code) how its code is generated; and the [module's](deployment/terraform#development) its tests.
 
 Releases are cut by release-please from Conventional Commits. Each release is tagged `vX.Y.Z` and attaches `index.js` and `index_bg.wasm`. Pin the module to a release tag or its commit SHA: before 1.0 there is no floating major tag, because minor releases may break.
 

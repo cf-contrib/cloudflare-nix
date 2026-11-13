@@ -1,13 +1,13 @@
 use std::sync::LazyLock;
 
-use cloudflare_nix_sdk::v1::HttpClient;
+use nix_cloudflare_sdk::v1::HttpClient;
 use tokio::sync::Mutex;
 
-/// Where `wrangler dev` serves the Worker: `CLOUDFLARE_NIX_API_URL`, which tests/run.sh sets for the one it starts, or
+/// Where `wrangler dev` serves the Worker: `NIX_CLOUDFLARE_API_URL`, which tests/run.sh sets for the one it starts, or
 /// `wrangler dev`'s own default.
 pub fn base_url() -> &'static str {
     static BASE_URL: LazyLock<String> = LazyLock::new(|| {
-        std::env::var("CLOUDFLARE_NIX_API_URL").unwrap_or_else(|_| "http://127.0.0.1:8787".into())
+        std::env::var("NIX_CLOUDFLARE_API_URL").unwrap_or_else(|_| "http://127.0.0.1:8787".into())
     });
     &BASE_URL
 }

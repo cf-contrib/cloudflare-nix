@@ -19,7 +19,7 @@ override_data {
         node_id              = "RA_test"
         size                 = 1
         updated_at           = "2026-10-01T00:00:00Z"
-        url                  = "https://api.github.com/repos/cf-contrib/cloudflare-nix/releases/assets/1"
+        url                  = "https://api.github.com/repos/nixos-contrib/nix-cloudflare/releases/assets/1"
       }
     ]
   }
@@ -37,7 +37,7 @@ override_data {
 
 variables {
   account_id  = "0123456789abcdef0123456789abcdef"
-  hostname    = "cloudflare-nix-api.example.workers.dev"
+  hostname    = "nix-cloudflare-api.example.workers.dev"
   bucket_name = "nix-cache"
 }
 
@@ -45,7 +45,7 @@ run "defaults" {
   command = plan
 
   assert {
-    condition     = [for b in cloudflare_worker_version.this.bindings : b.name] == ["CLOUDFLARE_NIX_API_BUCKET"]
+    condition     = [for b in cloudflare_worker_version.this.bindings : b.name] == ["NIX_CLOUDFLARE_API_BUCKET"]
     error_message = "without a signing key, only the bucket should be bound"
   }
 
@@ -55,7 +55,7 @@ run "defaults" {
   }
 
   assert {
-    condition     = output.url == "https://cloudflare-nix-api.example.workers.dev"
+    condition     = output.url == "https://nix-cloudflare-api.example.workers.dev"
     error_message = "url should be the workers.dev URL"
   }
 
@@ -74,13 +74,13 @@ run "signing_key_from_secrets_store" {
   command = plan
 
   variables {
-    signing_key_secret = { secret_store_id = "00000000000000000000000000000000", secret_name = "cloudflare-nix-signing-key" }
+    signing_key_secret = { secret_store_id = "00000000000000000000000000000000", secret_name = "nix-cloudflare-signing-key" }
   }
 
   assert {
     condition = anytrue([
       for b in cloudflare_worker_version.this.bindings :
-      b.name == "CLOUDFLARE_NIX_API_SECRET" && b.type == "secrets_store_secret" && b.secret_name == "cloudflare-nix-signing-key"
+      b.name == "NIX_CLOUDFLARE_API_SECRET" && b.type == "secrets_store_secret" && b.secret_name == "nix-cloudflare-signing-key"
     ])
     error_message = "the signing key should be a Secrets Store binding"
   }

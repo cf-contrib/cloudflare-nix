@@ -15,7 +15,7 @@ output "bucket_name" {
 
 output "release_tag" {
   value       = var.bundle_dir != null ? "local" : data.github_release.this[0].release_tag
-  description = "cloudflare-nix release that was deployed, or \"local\" for bundle_dir."
+  description = "nix-cloudflare release that was deployed, or \"local\" for bundle_dir."
 }
 
 output "worker_modules_sha256" {
