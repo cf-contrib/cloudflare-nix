@@ -2,7 +2,7 @@
 data "github_release" "this" {
   count = var.bundle_dir == null ? 1 : 0
 
-  owner       = "cf-contrib"
+  owner       = "nixos-contrib"
   repository  = "nix-cloudflare"
   retrieve_by = var.release_tag == "latest" ? "latest" : "tag"
   release_tag = var.release_tag == "latest" ? null : var.release_tag
