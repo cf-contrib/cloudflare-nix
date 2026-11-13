@@ -84,10 +84,10 @@ who may upload, put one of these in front of it:
 
 Nix can't answer an Access login itself. To sign in from Nix, use
 [nix-vault](https://github.com/nixos-contrib/nix-vault) (`aws-vault` for Nix): it
-signs you in, with HTTP Basic or OAuth2, and runs Nix with a session netrc
-that carries the credentials, for a gateway that takes them as HTTP Basic. This
-project has not tried Nix against Cloudflare Access directly. See the
-[Worker's README](crates/nix-cloudflare-api#access-control) for more.
+signs you in, keeps the credentials in your keychain, and runs Nix behind a local
+proxy that adds the headers Access wants. This is nix-vault's documented setup
+for Access; this project hasn't tested it end to end. See the
+[Worker's README](crates/nix-cloudflare-api#access-control) for a profile and the limits.
 
 ## Development
 

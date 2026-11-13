@@ -78,13 +78,11 @@ cache and write to it. That is the deployment's job, not the Worker's. Either:
 - **A gateway of your own**, a reverse proxy or another Worker that
   authenticates callers and forwards to this one.
 
-Nix sends credentials only as HTTP Basic from a netrc file, so a gateway
-that wants anything else, such as an Access login, needs a client that
-authenticates for it. [nix-vault](https://github.com/nixos-contrib/nix-vault)
-signs you in (HTTP Basic, or OAuth2 with a device or browser flow) and hands
-Nix a session netrc for the run. The Worker's
+Nix can't answer an Access login itself. [nix-vault](https://github.com/nixos-contrib/nix-vault)
+signs you in and runs Nix behind a local proxy that adds the headers Access
+wants. The Worker's
 [Access control](../../crates/nix-cloudflare-api/README.md#access-control)
-section has the details.
+section has a profile and the limits.
 
 ### Checking it's ready
 

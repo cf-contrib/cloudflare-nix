@@ -52,24 +52,55 @@ be walked around.
 
 ### Signing in from Nix
 
-Nix sends credentials to a binary cache only from a netrc file (`netrc-file`
-in `nix.conf`, or `--option netrc-file`), as HTTP Basic, and can't send other
-headers. So a gateway has to take what Nix can send, or the client has to
-authenticate for Nix.
+Nix sends credentials to a binary cache only from a netrc file, as HTTP Basic,
+and can't send the headers Cloudflare Access wants. [nix-vault](https://github.com/nixos-contrib/nix-vault)
+(`aws-vault` for Nix) covers that. It signs you in, keeps the credentials in
+your keychain, and runs a command with them available to Nix for that command
+only. For a service behind Access it starts a small reverse proxy on
+`127.0.0.1` for the length of the command, adds the headers you configure to
+each request, and points the session's `substituters` at it. A profile can hold
+a service token (a `basic` profile, sent as `CF-Access-Client-Id` and
+`CF-Access-Client-Secret`), sign in through an Access SaaS OIDC application
+(`oauth2`, sent as `Authorization: Bearer …`), or take its token from
+`cloudflared access token` (`process`, sent as `cf-access-token`).
 
-[nix-vault](https://github.com/nixos-contrib/nix-vault) is the client for that:
-`aws-vault` for Nix. It signs you in, with HTTP Basic or OAuth2 (device flow,
-or authorization code with PKCE), keeps the credentials in your keychain, and
-runs Nix with a session netrc and `nix.conf` that carry them. Point it at
-your gateway, which checks the Basic password (a token it issued) the way you
-decide.
+For example, signing in through Access as an OIDC application:
 
-What this project has not tried is Nix against Cloudflare Access: Access
-doesn't take Basic credentials, so Nix can't answer its login on its own, and
-no component here bridges the two.
+```toml
+# ~/.config/nix-vault/config.toml
+[cache]
+host = "cache.example.com"
+type = "oauth2"
 
-CI that needs to push has the same choice: whatever your gateway accepts, in
-the netrc, for the length of the job.
+[cache.oauth2]
+client_id = "<the Access SaaS OIDC application's client ID>"
+flow = "authorization_code"
+authorization_endpoint = "https://<team>.cloudflareaccess.com/cdn-cgi/access/sso/oidc/<client ID>/authorization"
+token_endpoint = "https://<team>.cloudflareaccess.com/cdn-cgi/access/sso/oidc/<client ID>/token"
+scopes = ["openid", "email", "offline_access"]
+redirect_port = 8251
+
+[cache.nix]
+use = ["proxy"]
+
+[cache.proxy]
+headers = { Authorization = "Bearer {access_token}" }
+```
+
+```sh
+nix-vault login --profile cache                                 # once
+nix-vault exec -p cache -- nix copy --to 'https://cache.example.com?compression=none' ./result
+```
+
+This is nix-vault's documented setup for Access. This project hasn't tested it
+end to end, and nix-vault's own README lists the limits: downloads done by the
+Nix daemon (multi-user installs, NixOS) may not see session credentials, Nix
+only honors the session's `substituters` for a trusted user or a
+`trusted-substituters` address, and builds in a sandbox or on a remote builder
+aren't covered. See its README for the rest.
+
+Anything that must push without a person signing in, such as CI, needs a
+credential your gateway or Access accepts; none is provided here.
 
 ## HTTP API
 
